@@ -46,4 +46,5 @@ ResourcePref resources[] = {
 	{ "selbackground",  STRING, &selbgcolor },
 	{ "prompt",         STRING, &prompt },
 	{ "lines",          INTEGER, &lines },
+	{ "lineheight",     INTEGER, &lineheight },
 };
