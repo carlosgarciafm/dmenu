@@ -645,7 +645,8 @@ load_xresources(void)
 	char *resm;
 	XrmDatabase db;
 	ResourcePref *p;
-	display = XOpenDisplay(NULL);
+	if(!(display = XOpenDisplay(NULL)))
+		die("cannot open display");
 	resm = XResourceManagerString(display);
 	if (!resm)
 		return;
