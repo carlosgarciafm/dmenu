@@ -355,8 +355,8 @@ keypress(XKeyEvent *ev)
 		case XK_e: ksym = XK_End;       break;
 		case XK_f: ksym = XK_Right;     break;
 		case XK_g: ksym = XK_Escape;    break;
-		case XK_h: ksym = XK_BackSpace; break;
-		case XK_i: ksym = XK_Tab;       break;
+		case XK_h: /* fallthrough */
+		case XK_i: /* fallthrough */
 		case XK_j: /* fallthrough */
 		case XK_J: /* fallthrough */
 		case XK_m: /* fallthrough */
@@ -394,6 +394,21 @@ keypress(XKeyEvent *ev)
 		case XK_bracketleft:
 			cleanup();
 			exit(1);
+		case XK_space:
+			if (!sel)
+				return;
+			strncpy(text, sel->text, sizeof text - 1);
+			text[sizeof text - 1] = '\0';
+			cursor = strlen(text);
+			match();
+			break;
+		case XK_BackSpace:
+			while (cursor > 0 && strchr(worddelimiters, text[nextrune(-1)]))
+				insert(NULL, nextrune(-1) - cursor);
+			while (cursor > 0 && !strchr(worddelimiters, text[nextrune(-1)]))
+				insert(NULL, nextrune(-1) - cursor);
+			goto draw;
+			break;
 		default:
 			return;
 		}
@@ -405,13 +420,23 @@ keypress(XKeyEvent *ev)
 		case XK_f:
 			movewordedge(+1);
 			goto draw;
-		case XK_g: ksym = XK_Home;  break;
-		case XK_G: ksym = XK_End;   break;
-		case XK_h: ksym = XK_Up;    break;
-		case XK_j: ksym = XK_Next;  break;
-		case XK_k: ksym = XK_Prior; break;
-		case XK_l: ksym = XK_Down;  break;
+		case XK_g: ksym = XK_Home;		break;
+		case XK_G: ksym = XK_End;		break;
+		case XK_h: ksym = XK_Up;		break;
+		case XK_i: ksym = XK_Insert;	break;
+		case XK_j: ksym = XK_Next;		break;
+		case XK_k: ksym = XK_Prior;		break;
+		case XK_l: ksym = XK_Down;		break;
 		default:
+			return;
+		}
+	}
+
+	else if (ev->state & ShiftMask) {
+		switch(ksym) {
+		case XK_Insert:
+			XConvertSelection(dpy, (ev->state & ShiftMask) ? clip : XA_PRIMARY,
+							  utf8, utf8, win, CurrentTime);
 			return;
 		}
 	}
@@ -421,6 +446,14 @@ keypress(XKeyEvent *ev)
 	insert:
 		if (!iscntrl(*buf))
 			insert(buf, len);
+		break;
+	case XK_Insert:
+		if (!sel)
+			return;
+		strncpy(text, sel->text, sizeof text - 1);
+		text[sizeof text - 1] = '\0';
+		cursor = strlen(text);
+		match();
 		break;
 	case XK_Delete:
 		if (text[cursor] == '\0')
@@ -510,12 +543,11 @@ keypress(XKeyEvent *ev)
 		}
 		break;
 	case XK_Tab:
-		if (!sel)
-			return;
-		strncpy(text, sel->text, sizeof text - 1);
-		text[sizeof text - 1] = '\0';
-		cursor = strlen(text);
-		match();
+		if(matches && matches == matchend) {
+			puts(matches->text);
+			cleanup();
+			exit(0);
+		}
 		break;
 	}
 
