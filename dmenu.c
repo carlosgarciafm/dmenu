@@ -160,7 +160,7 @@ drawmenu(void)
 	int x = 0, y = 0, fh = drw->fonts->h, w;
 	char *censort;
 
-	drw_setscheme(drw, scheme[SchemeNorm]);
+	drw_setscheme(drw, (lines? scheme[SchemeTpt]: scheme[SchemeNorm]));
 	drw_rect(drw, 0, 0, mw, mh, 1, 1);
 
 	if (prompt && *prompt) {
