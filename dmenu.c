@@ -28,9 +28,10 @@
 #define TEXTW(X)              (drw_fontset_getwidth(drw, (X)) + lrpad)
 
 #define OPAQUE                0xffU
+#define TRANSPARENT           0x00U
 
 /* enums */
-enum { SchemeNorm, SchemeSel, SchemeOut, SchemeLast }; /* color schemes */
+enum { SchemeNorm, SchemeSel, SchemeOut, SchemeTpt, SchemeLast }; /* color schemes */
 
 struct item {
 	char *text;
